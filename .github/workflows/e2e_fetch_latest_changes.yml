@@ -40,7 +40,7 @@ jobs:
         run: |
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"
           git config --local user.name "Release action on behalf of ${{ github.actor }}"
-          git add -all
+          git add --all
           git commit -am 'Commit v${{ github.event.client_payload.site_template_version }}'
       - name: Push changes
         uses: ad-m/github-push-action@master
