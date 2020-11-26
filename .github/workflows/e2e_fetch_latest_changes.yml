@@ -32,7 +32,7 @@ jobs:
       - name: Unzip site theme and copy into root. Cleanup afterwards.
         run: |
           unzip site-template-tmp/theme-sources.zip -d site-template-tmp/site-theme-sources
-          cp -fr site-template-tmp/site-theme-sources/* ./
+          cp -fr site-template-tmp/site-theme-sources/ ./
           ls -la
           rm -fr site-template-tmp
 
