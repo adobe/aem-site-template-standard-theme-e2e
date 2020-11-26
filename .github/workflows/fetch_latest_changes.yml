@@ -33,6 +33,7 @@ jobs:
         run: |
           unzip site-template-tmp/theme-sources.zip -d site-template-tmp/site-theme-sources
           cp -fr site-template-tmp/site-theme-sources/* ./
+          ls -l
           rm -fr site-template-tmp
 
       - name: Commit all
