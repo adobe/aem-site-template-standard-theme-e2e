@@ -1,23 +1,49 @@
-name: Updates theme based on AEM Site Template Basic repo
+name: Update theme
+
+# curl -H "Accept: application/vnd.github.v3+json" \
+#    -H "Authorization: token ..." \
+#    --request POST \
+#    --data '{"event_type": "fetch_latest_changes", "client_payload": { "site_template_version": "2.0.1" } }' \
+#    https://api.github.com/repos/adobe/aem-site-template-basic-theme-e2e/dispatches
 
 on:
   repository_dispatch:
     types: fetch_latest_changes
 
-  workflow_dispatch:
-
 jobs:
 
-  build:
+  update:
+    name: Update theme based on AEM Site Template Basic repo
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      - name: Run a multi-line script
+      
+      - name: Compute env vars
+        id: env_vars
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          echo ::set-output name=ZIP_PATH::$(echo "https://github.com/adobe/aem-site-template-basic/releases/download/v${{ github.event.client_payload.site_template_version }}/aem-site-template-basic-${{ github.event.client_payload.site_template_version }}.zip"
+
+      - name: Download and unzip site template
+        run: |
+          curl --location --output site-template-tmp/site-template.zip --create-dirs ${{ steps.env_vars.outputs.ZIP_PATH }}
+          unzip site-template-tmp/site-template.zip -d site-template-tmp
+          
+      - name: Unzip site theme and copy into root. Cleanup afterwards.
+        run: |
+          unzip site-template-tmp/theme-sources.zip -d site-template-tmp/site-theme-sources
+          cp -fr site-template-tmp/site-theme-sources/* ./
+          rm -fr site-template-tmp
+
+      - name: Commit all
+        run: |
+          git config --local user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --local user.name "Release action on behalf of ${{ github.actor }}"
+          git commit -am 'Commit v${{ github.event.client_payload.site_template_version }}'
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+          tags: false
+          
