@@ -45,11 +45,14 @@ jobs:
           git config --local user.name "Release action on behalf of ${{ github.actor }}"
           git add --all
           git commit -am 'Commit v${{ github.event.client_payload.site_template_version }}'
+
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.TOKEN_WITH_WORKFLOW_WRITE_PERMISSIONS }}
           branch: ${{ github.ref }}
           force: true # simple use "theirs" merge-conflict strategy
-          tags: true
-          
+          tags: false
+
+      - name: Create Tag
+        run: git tag site-theme-from-site-template-v${{ github.event.client_payload.site_template_version }} 
