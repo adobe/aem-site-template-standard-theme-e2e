@@ -27,12 +27,23 @@ jobs:
           echo ::set-output name=ZIP_PATH::$(echo "https://github.com/adobe/aem-site-template-basic/releases/download/v${{ github.event.client_payload.site_template_version }}/aem-site-template-basic-${{ github.event.client_payload.site_template_version }}.zip")
           echo ::set-output name=TAG_NAME::$(echo "site-theme-from-site-template-v${{ github.event.client_payload.site_template_version }}")
 
+      - name: Check if tag exists
+        id: tag
+        shell: bash
+        run: git show-ref --tags --verify --quiet -- "refs/tags/${{ steps.env_vars.outputs.TAG_NAME }}" && echo "::set-output name=exists::yes" || echo "::set-output name=exists::no"
+
+      - name: Print 'I do nothing' if tag exists
+        if: steps.tag.exists == 'yes'
+        run: echo "Tag already exists. I do nothing."
+
       - name: Site Template – download and unzip
+        if: steps.tag.exists == 'no'
         run: |
           curl --location --output site-template-tmp/site-template.zip --create-dirs ${{ steps.env_vars.outputs.ZIP_PATH }}
           unzip site-template-tmp/site-template.zip -d site-template-tmp
 
       - name: Site Theme – unzip, copy into root (.github folder needs special treatment for unknown reasons) and then cleanup
+        if: steps.tag.exists == 'no'
         run: |
           unzip site-template-tmp/theme-sources.zip -d site-template-tmp/site-theme-sources
           cp -fr site-template-tmp/site-theme-sources/* ./
@@ -40,15 +51,17 @@ jobs:
           ls -la
           rm -fr site-template-tmp
 
-      - name: Commit all and create tag
+      - name: Commit site theme and create tag
+        if: steps.tag.exists == 'no'
         run: |
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"
           git config --local user.name "Release action on behalf of ${{ github.actor }}"
           git add --all
-          git commit -am 'Update ${{ steps.env_vars.outputs.TAG_NAME }}'
+          git commit -am 'Commit ${{ steps.env_vars.outputs.TAG_NAME }}'
           git tag ${{ steps.env_vars.outputs.TAG_NAME }} -m "${{ steps.env_vars.outputs.TAG_NAME }}"
 
       - name: Push changes
+        if: steps.tag.exists == 'no'
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.TOKEN_WITH_WORKFLOW_WRITE_PERMISSIONS }}
