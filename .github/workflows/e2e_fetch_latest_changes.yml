@@ -24,15 +24,16 @@ jobs:
         run: |
           echo ::set-output name=ZIP_PATH::$(echo "https://github.com/adobe/aem-site-template-basic/releases/download/v${{ github.event.client_payload.site_template_version }}/aem-site-template-basic-${{ github.event.client_payload.site_template_version }}.zip")
 
-      - name: Download and unzip site template
+      - name: Site Template – download and unzip
         run: |
           curl --location --output site-template-tmp/site-template.zip --create-dirs ${{ steps.env_vars.outputs.ZIP_PATH }}
           unzip site-template-tmp/site-template.zip -d site-template-tmp
-          
-      - name: Unzip site theme and copy into root. Cleanup afterwards.
+
+      - name: Site Theme – unzip, copy into root (.github folder needs special treatment for unknown reasons) and then cleanup
         run: |
           unzip site-template-tmp/theme-sources.zip -d site-template-tmp/site-theme-sources
-          cp -fr site-template-tmp/site-theme-sources/ ./
+          cp -fr site-template-tmp/site-theme-sources/* ./
+          cp -fr site-template-tmp/site-theme-sources/.github/* ./.github/ 
           ls -la
           rm -fr site-template-tmp
 
@@ -47,5 +48,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
-          tags: false
+          tags: true
           
