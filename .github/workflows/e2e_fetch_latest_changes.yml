@@ -18,6 +18,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false # otherwise GITHUB_TOKEN is used, instead of TOKEN_WITH_WORKFLOW_WRITE_PERMISSIONS
       
       - name: Compute env vars
         id: env_vars
