@@ -50,5 +50,6 @@ jobs:
         with:
           github_token: ${{ secrets.TOKEN_WITH_WORKFLOW_WRITE_PERMISSIONS }}
           branch: ${{ github.ref }}
+          force: true # simple use "theirs" merge-conflict strategy
           tags: true
           
