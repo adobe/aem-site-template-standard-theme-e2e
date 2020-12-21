@@ -28,3 +28,5 @@ npm run live
 ```
 
 4. Once your work completed, check your changes into GitHub, and execute the deployment action on GitHub.
+
+Version: Mon Dec 21 14:56:26 UTC 2020
