@@ -58,3 +58,11 @@ jobs:
           branch: ${{ github.ref }}
           force: true # simple use "theirs" merge-conflict strategy
           tags: true
+
+      - name: Dispatch deploy event
+        run: |
+          curl -H "Accept: application/vnd.github.everest-preview+json" \
+            -H "Authorization: token ${{ secrets.GIT_TOKEN }}" \
+            --request POST \
+            --data '{"event_type": "deploy_artifact" }' \
+            ${{ github.api_url }}/repos/${{ github.repository }}/dispatches
