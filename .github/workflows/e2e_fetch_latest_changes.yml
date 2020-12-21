@@ -65,7 +65,7 @@ jobs:
             --data '{"event_type": "deploy_artifact" }' \
             ${{ github.api_url }}/repos/${{ github.repository }}/dispatches
 
-       - name: Site Theme – change background color and add version to README
+      - name: Site Theme – change background color and add version to README
         run: |
           sed -i 's/#FFFFFF/pink/g' src/site/_variables.scss
           printf "\nVersion: %s" "$(date)" >> README.md
