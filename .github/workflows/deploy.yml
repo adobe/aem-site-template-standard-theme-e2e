@@ -4,6 +4,8 @@ name: Build and deploy to Github artifacts
 
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types: deploy
 
 jobs:
   build_and_deploy:

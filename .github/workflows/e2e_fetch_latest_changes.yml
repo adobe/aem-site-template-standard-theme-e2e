@@ -7,6 +7,8 @@ name: Update theme
 #    https://api.github.com/repos/adobe/aem-site-template-basic-theme-e2e/dispatches
 
 on:
+  schedule:
+    - cron:  '0 1 * * *'
   repository_dispatch:
     types: fetch_latest_changes
 
@@ -32,11 +34,12 @@ jobs:
           curl --location --output site-template-tmp/site-template.zip --create-dirs ${{ steps.env_vars.outputs.ZIP_PATH }}
           unzip site-template-tmp/site-template.zip -d site-template-tmp
 
-      - name: Site Theme – unzip, copy into root (.github folder needs special treatment for unknown reasons) and then cleanup
+      - name: Site Theme – unzip, copy into root, change background and then cleanup
         run: |
           unzip site-template-tmp/theme-sources.zip -d site-template-tmp/site-theme-sources
-          cp -fr site-template-tmp/site-theme-sources/* ./
-          cp -fr site-template-tmp/site-theme-sources/.github/* ./.github/ 
+          cp -frT site-template-tmp/site-theme-sources ./
+          sed -i "" 's/#FFFFFF/pink/g' src/site/_variables.scss
+          printf "\nVersion: %s" "$(date)" >> README.md
           ls -la
           rm -fr site-template-tmp
 
@@ -55,3 +58,11 @@ jobs:
           branch: ${{ github.ref }}
           force: true # simple use "theirs" merge-conflict strategy
           tags: true
+
+      - name: Dispatch deployment of new artifactid
+          run: |
+            curl -H "Accept: application/vnd.github.everest-preview+json" \
+              -H "Authorization: token ${{ secrets.GIT_TOKEN }}" \
+              --request POST \
+              --data '{"event_type": "deploy" }' \
+              ${{ github.api_url }}/repos/${{ github.repository }}/dispatches
