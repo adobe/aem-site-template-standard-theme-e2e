@@ -38,8 +38,6 @@ jobs:
         run: |
           unzip site-template-tmp/theme-sources.zip -d site-template-tmp/site-theme-sources
           cp -frT site-template-tmp/site-theme-sources ./
-          sed -i 's/#FFFFFF/pink/g' src/site/_variables.scss
-          printf "\nVersion: %s" "$(date)" >> README.md
           ls -la
           rm -fr site-template-tmp
 
@@ -50,6 +48,34 @@ jobs:
           git add --all
           git commit -am 'Commit ${{ steps.env_vars.outputs.TAG_NAME }}'
           git tag ${{ steps.env_vars.outputs.TAG_NAME }} -m "${{ steps.env_vars.outputs.TAG_NAME }}"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.TOKEN_WITH_WORKFLOW_WRITE_PERMISSIONS }}
+          branch: ${{ github.ref }}
+          force: true # simple use "theirs" merge-conflict strategy
+          tags: true
+
+      - name: Dispatch deploy event
+        run: |
+          curl -H "Accept: application/vnd.github.everest-preview+json" \
+            -H "Authorization: token ${{ secrets.GIT_TOKEN }}" \
+            --request POST \
+            --data '{"event_type": "deploy_artifact" }' \
+            ${{ github.api_url }}/repos/${{ github.repository }}/dispatches
+
+       - name: Site Theme – change background color and add version to README
+        run: |
+          sed -i 's/#FFFFFF/pink/g' src/site/_variables.scss
+          printf "\nVersion: %s" "$(date)" >> README.md
+
+      - name: Commit site theme
+        run: |
+          git config --local user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --local user.name "Release action on behalf of ${{ github.actor }}"
+          git add --all
+          git commit -am 'Pink'
 
       - name: Push changes
         uses: ad-m/github-push-action@master
