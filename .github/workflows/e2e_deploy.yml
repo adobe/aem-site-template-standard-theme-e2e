@@ -3,8 +3,9 @@
 name: Build and deploy to Github artifacts
 
 on:
-  repository_dispatch:
-    types: deploy_artifact
+  push:
+    branches:
+      - main
 
 jobs:
   build_and_deploy:
@@ -24,11 +25,3 @@ jobs:
         with:
           name: site-theme
           path: ${{ github.workspace }}/dist/**/*
-
-      - name: Dispatch completed event (this is a workaround in order to access the artifact id)
-        run: |
-          curl -H "Accept: application/vnd.github.everest-preview+json" \
-            -H "Authorization: token ${{ secrets.GIT_TOKEN }}" \
-            --request POST \
-            --data '{"event_type": "update_theme_config", "client_payload": { "deployed_theme_run_id": "${{ github.run_id }}" } }' \
-            ${{ github.api_url }}/repos/${{ github.repository }}/dispatches
