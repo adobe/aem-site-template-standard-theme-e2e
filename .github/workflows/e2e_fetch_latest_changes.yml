@@ -1,21 +1,14 @@
-name: Update theme
-
-# curl -H "Accept: application/vnd.github.v3+json" \
-#    -H "Authorization: token ..." \
-#    --request POST \
-#    --data '{"event_type": "fetch_latest_changes" }' \
-#    https://api.github.com/repos/adobe/aem-site-template-basic-theme-e2e/dispatches
+name: Update theme and deploy
 
 on:
   schedule:
     - cron:  '0 1 * * *'
-  repository_dispatch:
-    types: fetch_latest_changes
+  workflow_dispatch:
 
 jobs:
 
   update:
-    name: Update theme based on AEM Site Template Basic repo
+    name: Update theme based on latest AEM Site Template Basic repo
     runs-on: ubuntu-latest
 
     steps:
@@ -23,6 +16,7 @@ jobs:
         uses: pozetroninc/github-action-get-latest-release@master
         with:
           repository: adobe/aem-site-template-basic
+
       - uses: actions/checkout@v2
         with:
           persist-credentials: false # otherwise GITHUB_TOKEN is used, instead of TOKEN_WITH_WORKFLOW_WRITE_PERMISSIONS
@@ -39,7 +33,7 @@ jobs:
           curl --location --output site-template-tmp/site-template.zip --create-dirs ${{ steps.env_vars.outputs.ZIP_PATH }}
           unzip site-template-tmp/site-template.zip -d site-template-tmp
 
-      - name: Site Theme – unzip, copy into root, change background and then cleanup
+      - name: Site Theme – unzip, copy into root and then cleanup
         run: |
           unzip site-template-tmp/theme-sources.zip -d site-template-tmp/site-theme-sources
           cp -frT site-template-tmp/site-theme-sources ./
@@ -62,13 +56,22 @@ jobs:
           force: true # simple use "theirs" merge-conflict strategy
           tags: true
 
-      - name: Site Theme – pause for 3 sec, change background color and add version to README
-        run: |
-          sleep 3
-          sed -i 's/#FFFFFF/pink/g' src/site/_variables.scss
-          printf "\nVersion: %s" "$(date)" >> README.md
+      - name: Install NPM dependencies
+        run: npm install
 
-      - name: Commit site theme
+      - name: Build artifacts for production
+        run: npm run build
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: site-theme
+          path: ${{ github.workspace }}/dist/**/*
+
+      - name: Site Theme – change background color to pink
+        run: |
+          sed -i 's/#FFFFFF/pink/g' src/site/_variables.scss
+
+      - name: Commit changed site theme
         run: |
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"
           git config --local user.name "Release action on behalf of ${{ github.actor }}"
@@ -82,3 +85,11 @@ jobs:
           branch: ${{ github.ref }}
           force: true # simple use "theirs" merge-conflict strategy
           tags: true
+
+      - name: Build artifacts for production
+        run: npm run build
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: site-theme-pink
+          path: ${{ github.workspace }}/dist/**/*
