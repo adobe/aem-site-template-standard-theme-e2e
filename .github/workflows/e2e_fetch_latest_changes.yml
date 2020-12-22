@@ -30,7 +30,8 @@ jobs:
       - name: Compute env vars
         id: env_vars
         run: |
-          echo ::set-output name=ZIP_PATH::$(echo "https://github.com/adobe/aem-site-template-basic/releases/download/${{ steps.site_template.outputs.release }}/aem-site-template-basic-${{ steps.site_template.outputs.release }}.zip")
+          echo ::set-output name=VERSION::$(echo ${{ steps.site_template.outputs.release }}:1)
+          echo ::set-output name=ZIP_PATH::$(echo "https://github.com/adobe/aem-site-template-basic/releases/download/${{ steps.site_template.outputs.release }}/aem-site-template-basic-${{ steps.env_vars.outputs.VERSION }}.zip")
           echo ::set-output name=TAG_NAME::$(echo "site-theme-from-site-template-${{ steps.site_template.outputs.release }}")
 
       - name: Site Template – download and unzip
