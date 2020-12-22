@@ -3,7 +3,7 @@ name: Update theme
 # curl -H "Accept: application/vnd.github.v3+json" \
 #    -H "Authorization: token ..." \
 #    --request POST \
-#    --data '{"event_type": "fetch_latest_changes", "client_payload": { "site_template_version": "2.0.1" } }' \
+#    --data '{"event_type": "fetch_latest_changes" }' \
 #    https://api.github.com/repos/adobe/aem-site-template-basic-theme-e2e/dispatches
 
 on:
@@ -19,6 +19,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - id: site_template
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: adobe/aem-site-template-basic
       - uses: actions/checkout@v2
         with:
           persist-credentials: false # otherwise GITHUB_TOKEN is used, instead of TOKEN_WITH_WORKFLOW_WRITE_PERMISSIONS
@@ -26,8 +30,8 @@ jobs:
       - name: Compute env vars
         id: env_vars
         run: |
-          echo ::set-output name=ZIP_PATH::$(echo "https://github.com/adobe/aem-site-template-basic/releases/download/v${{ github.event.client_payload.site_template_version }}/aem-site-template-basic-${{ github.event.client_payload.site_template_version }}.zip")
-          echo ::set-output name=TAG_NAME::$(echo "site-theme-from-site-template-v${{ github.event.client_payload.site_template_version }}")
+          echo ::set-output name=ZIP_PATH::$(echo "https://github.com/adobe/aem-site-template-basic/releases/download/v${{ steps.site_template.outputs.release }}/aem-site-template-basic-${{ steps.site_template.outputs.release }}.zip")
+          echo ::set-output name=TAG_NAME::$(echo "site-theme-from-site-template-v${{ steps.site_template.outputs.release }}")
 
       - name: Site Template – download and unzip
         run: |
@@ -57,8 +61,9 @@ jobs:
           force: true # simple use "theirs" merge-conflict strategy
           tags: true
 
-      - name: Site Theme – change background color and add version to README
+      - name: Site Theme – pause for 3 sec, change background color and add version to README
         run: |
+          sleep 3
           sed -i 's/#FFFFFF/pink/g' src/site/_variables.scss
           printf "\nVersion: %s" "$(date)" >> README.md
 
