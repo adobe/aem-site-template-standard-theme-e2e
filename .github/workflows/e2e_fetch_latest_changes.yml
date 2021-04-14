@@ -69,7 +69,7 @@ jobs:
 
       - name: Site Theme – change background color to pink
         run: |
-          sed -i 's/#FFFFFF/pink/g' src/site/_variables.scss
+          sed -i 's/$color-background:\ #ffffff/$color-background:\ pink/g' src/site/_variables.scss
 
       - name: Commit changed site theme
         run: |
