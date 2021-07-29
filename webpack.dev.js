@@ -16,6 +16,7 @@ const SOURCE_ROOT = __dirname + '/src';
 
 module.exports = merge(common, {
    mode: 'development',
+   watch: true,
    devtool: 'inline-source-map',
    performance: { hints: "warning" },
    devServer: {
