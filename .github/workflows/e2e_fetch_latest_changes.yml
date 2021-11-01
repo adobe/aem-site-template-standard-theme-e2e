@@ -15,7 +15,7 @@ jobs:
       - id: site_template
         uses: pozetroninc/github-action-get-latest-release@master
         with:
-          repository: adobe/aem-site-template-basic
+          repository: adobe/aem-site-template-standard
 
       - uses: actions/checkout@v2
         with:
@@ -25,7 +25,7 @@ jobs:
         id: env_vars
         run: |
           VERSION=$(echo ${{ steps.site_template.outputs.release }} | cut -f2 -d"v")
-          echo ::set-output name=ZIP_PATH::$(echo "https://github.com/adobe/aem-site-template-basic/releases/download/${{ steps.site_template.outputs.release }}/aem-site-template-basic-$VERSION.zip")
+          echo ::set-output name=ZIP_PATH::$(echo "https://github.com/adobe/aem-site-template-standard/releases/download/${{ steps.site_template.outputs.release }}/aem-site-template-standard-$VERSION.zip")
           echo ::set-output name=TAG_NAME::$(echo "site-theme-from-site-template-${{ steps.site_template.outputs.release }}")
 
       - name: Site Template – download and unzip
