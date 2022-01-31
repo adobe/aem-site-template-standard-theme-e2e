@@ -16,7 +16,7 @@ jobs:
         uses: pozetroninc/github-action-get-latest-release@master
         with:
           repository: adobe/aem-site-template-standard
-
+          excludes: prerelease, draft
       - uses: actions/checkout@v2
         with:
           persist-credentials: false # otherwise GITHUB_TOKEN is used, instead of TOKEN_WITH_WORKFLOW_WRITE_PERMISSIONS
